@@ -404,13 +404,14 @@ MonoBehaviour:
   textures:
   - {fileID: 2800000, guid: 9506c885cd9fa144e9142a03fbd99dd6, type: 3}
   - {fileID: 2800000, guid: 12e281a5b44dcce4393d675312775b10, type: 3}
+  - {fileID: 2800000, guid: 002f8de457afeef49b3d5456f61586ed, type: 3}
   - {fileID: 2800000, guid: 9aac84faf67d0ca4b9d6efbd4d27a849, type: 3}
+  - {fileID: 2800000, guid: fe1471620c6980246afa8143d135e9fc, type: 3}
   - {fileID: 2800000, guid: ae5848b0c9fff6c4a87e3bbe87b1e119, type: 3}
+  - {fileID: 2800000, guid: b40275627efde744b980f72921706196, type: 3}
+  - {fileID: 2800000, guid: 839a11493c5640044ab643f1ce2de205, type: 3}
   - {fileID: 2800000, guid: 9d815fed57ec7fe40a9d89cd5a708ea8, type: 3}
-  - {fileID: 2800000, guid: 653bf99aa73b8fc4c804114eb97296e8, type: 3}
   - {fileID: 2800000, guid: dd192c6007229f84ca5ebc4ef9236d19, type: 3}
-  - {fileID: 2800000, guid: 0000894bdf64f1b468a3c75f66de34ab, type: 3}
-  - {fileID: 2800000, guid: 5d6795382a9cf8e45a68ba4346c66efd, type: 3}
   imagesPerRow: 3
   spacingFraction: 0.1
   selectedColor: {r: 0.8, g: 0.8, b: 1, a: 1}
@@ -638,7 +639,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 520bb47c46cf8624fafb307b7d1b862a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Camera: {fileID: 1586489342}
 --- !u!4 &384370305
 Transform:
   m_ObjectHideFlags: 0
@@ -1310,8 +1310,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 816b289ef451e094f9ae174fb4cf8db0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UseCustomMaterial: 0
-  m_CustomMaterial: {fileID: 0}
 --- !u!114 &1586489344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1324,11 +1322,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4966719baa26e4b0e8231a24d9bd491a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FocusMode: -1
-  m_LightEstimationMode: -1
-  m_AutoFocus: 1
-  m_LightEstimation: 0
-  m_FacingDirection: 1
 --- !u!114 &1586489345
 MonoBehaviour:
   m_ObjectHideFlags: 0
