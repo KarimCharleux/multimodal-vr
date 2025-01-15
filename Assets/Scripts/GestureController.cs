@@ -6,15 +6,18 @@ public class GestureController : MonoBehaviour
     [SerializeField] private LayerMask selectableLayer;
     [SerializeField] private float maxSelectionDistance = 10f;
     [SerializeField] private Material selectedObjectMaterial;
+    [SerializeField] private Material hoveredObjectMaterial;
     
     [Header("Manipulation Settings")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float objectMoveDistance = 5f; // Distance at which object follows camera
+    [SerializeField] private float objectMoveDistance = 5f;
     [SerializeField] private bool showDebugLogs = true;
 
     private Camera mainCamera;
     private GameObject selectedObject;
+    private GameObject hoveredObject;
     private Material originalMaterial;
+    private Material originalHoverMaterial;
     private bool isMovingObject = false;
     
     // Crosshair settings
@@ -30,22 +33,29 @@ public class GestureController : MonoBehaviour
             enabled = false;
             return;
         }
+
+        // Create hover material if not assigned
+        if (hoveredObjectMaterial == null)
+        {
+            hoveredObjectMaterial = new Material(Shader.Find("Standard"));
+            hoveredObjectMaterial.color = new Color(1f, 1f, 0f, 0.5f); // Semi-transparent yellow
+        }
     }
 
     private void Update()
     {
-        // Check for object selection when clicking
+        // Check for object under crosshair
+        CheckHover();
+
+        // Handle object selection and movement
         if (Input.GetMouseButtonDown(0))
         {
             // Use screen center for raycast since cursor is locked
             Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             RaycastHit hit;
 
-            DebugLog("Casting ray from screen center");
-
             if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
             {
-                DebugLog($"Hit object: {hit.collider.gameObject.name}");
                 if (!isMovingObject)
                 {
                     SelectObject(hit.collider.gameObject);
@@ -54,7 +64,6 @@ public class GestureController : MonoBehaviour
             }
             else if (isMovingObject)
             {
-                // Place the object at current position
                 DeselectObject();
                 isMovingObject = false;
             }
@@ -63,28 +72,68 @@ public class GestureController : MonoBehaviour
         // Handle object movement
         if (isMovingObject && selectedObject != null)
         {
-            // Calculate position in front of camera
             Vector3 targetPosition = mainCamera.transform.position + 
                                    mainCamera.transform.forward * objectMoveDistance;
             
-            // Keep the object's y position constant if desired
-            // targetPosition.y = selectedObject.transform.position.y;
-
-            // Smoothly move the object
             selectedObject.transform.position = Vector3.Lerp(
                 selectedObject.transform.position,
                 targetPosition,
                 moveSpeed * Time.deltaTime
             );
-
-            DebugLog($"Moving object to: {targetPosition}");
         }
 
-        // Allow canceling object movement with right click
+        // Cancel movement with right click
         if (Input.GetMouseButtonDown(1) && isMovingObject)
         {
             DeselectObject();
             isMovingObject = false;
+        }
+    }
+
+    private void CheckHover()
+    {
+        Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
+        {
+            GameObject hitObject = hit.collider.gameObject;
+            
+            // Don't hover the selected object
+            if (hitObject != selectedObject)
+            {
+                if (hoveredObject != hitObject)
+                {
+                    // Unhover previous object
+                    UnhoverCurrentObject();
+                    
+                    // Hover new object
+                    hoveredObject = hitObject;
+                    var renderer = hoveredObject.GetComponent<Renderer>();
+                    if (renderer != null)
+                    {
+                        originalHoverMaterial = renderer.material;
+                        renderer.material = hoveredObjectMaterial;
+                    }
+                }
+            }
+        }
+        else
+        {
+            UnhoverCurrentObject();
+        }
+    }
+
+    private void UnhoverCurrentObject()
+    {
+        if (hoveredObject != null)
+        {
+            var renderer = hoveredObject.GetComponent<Renderer>();
+            if (renderer != null && originalHoverMaterial != null)
+            {
+                renderer.material = originalHoverMaterial;
+            }
+            hoveredObject = null;
         }
     }
 
@@ -93,6 +142,12 @@ public class GestureController : MonoBehaviour
         if (selectedObject != null)
         {
             DeselectObject();
+        }
+
+        // Unhover the object if it's being selected
+        if (obj == hoveredObject)
+        {
+            UnhoverCurrentObject();
         }
 
         selectedObject = obj;
@@ -126,8 +181,7 @@ public class GestureController : MonoBehaviour
             float centerX = Screen.width / 2;
             float centerY = Screen.height / 2;
             
-            // Draw crosshair
-            GUI.color = Color.white;
+            GUI.color = hoveredObject != null ? Color.yellow : Color.white;
             GUI.DrawTexture(
                 new Rect(centerX - crosshairSize/2, centerY - 1, crosshairSize, 2), 
                 Texture2D.whiteTexture
@@ -137,6 +191,13 @@ public class GestureController : MonoBehaviour
                 Texture2D.whiteTexture
             );
         }
+    }
+
+    private void OnDisable()
+    {
+        // Clean up when disabled
+        UnhoverCurrentObject();
+        DeselectObject();
     }
 
     private void DebugLog(string message)
