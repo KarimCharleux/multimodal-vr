@@ -16,9 +16,4 @@ public class ObjectInfo : MonoBehaviour
     }
 
     public ObjectDetails details;
-
-    private void OnMouseDown()
-    {
-        InfoPopupManager.Instance.ShowPopup(details);
-    }
 }

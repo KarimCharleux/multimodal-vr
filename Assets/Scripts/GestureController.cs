@@ -47,6 +47,12 @@ public class GestureController : MonoBehaviour
         // Check for object under crosshair
         CheckHover();
 
+        // Handle info popup
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            HandleInfoPopup();
+        }
+
         // Handle object selection and movement
         if (Input.GetMouseButtonDown(0))
         {
@@ -87,6 +93,38 @@ public class GestureController : MonoBehaviour
         {
             DeselectObject();
             isMovingObject = false;
+        }
+    }
+
+    private bool isPopupOpen = false;
+    private ObjectInfo currentPopupObject = null;
+
+    private void HandleInfoPopup()
+    {
+        if (isPopupOpen)
+        {
+            // Close the popup
+            InfoPopupManager.Instance.HidePopup();
+            isPopupOpen = false;
+            currentPopupObject = null;
+            DebugLog("Closing info popup");
+            return;
+        }
+
+        // Try to open a new popup
+        Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
+        {
+            ObjectInfo objectInfo = hit.collider.gameObject.GetComponent<ObjectInfo>();
+            if (objectInfo != null)
+            {
+                InfoPopupManager.Instance.ShowPopup(objectInfo.details);
+                isPopupOpen = true;
+                currentPopupObject = objectInfo;
+                DebugLog($"Showing info popup for: {hit.collider.gameObject.name}");
+            }
         }
     }
 
