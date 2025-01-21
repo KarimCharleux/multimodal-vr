@@ -156,6 +156,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
     Standalone: com.DefaultCompany.vr
+    iPhone: com.DefaultCompany.vr
   buildNumber:
     Standalone: 0
     iPhone: 0
