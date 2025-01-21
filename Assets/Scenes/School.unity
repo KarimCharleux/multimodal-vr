@@ -6879,6 +6879,12 @@ MonoBehaviour:
   targetSceneName: SampleScene
   audioSource: {fileID: 975184862}
   birdSound: {fileID: 8300000, guid: d2585f7f34234d4094d3ce5c6ce3bdfa, type: 3}
+  cursorImage: {fileID: 1657666764}
+  cursorNormalColor: {r: 0.46226418, g: 0.4600837, b: 0.4600837, a: 1}
+  cursorHoverColor: {r: 0, g: 1, b: 0, a: 1}
+  cursorNormalSize: 1
+  cursorHoverSize: 1.2
+  showCursor: 1
 --- !u!1001 &380085922
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30429,6 +30435,12 @@ MonoBehaviour:
   targetSceneName: SampleScene
   audioSource: {fileID: 975184862}
   birdSound: {fileID: 8300000, guid: d2585f7f34234d4094d3ce5c6ce3bdfa, type: 3}
+  cursorImage: {fileID: 0}
+  cursorNormalColor: {r: 1, g: 1, b: 1, a: 1}
+  cursorHoverColor: {r: 0, g: 1, b: 0, a: 1}
+  cursorNormalSize: 1
+  cursorHoverSize: 1.2
+  showCursor: 1
 --- !u!1001 &1433771147
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35492,6 +35504,82 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1651338491}
+  m_CullTransparentMesh: 1
+--- !u!1 &1657666762
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1657666763}
+  - component: {fileID: 1657666765}
+  - component: {fileID: 1657666764}
+  m_Layer: 5
+  m_Name: Cursor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1657666763
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657666762}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1916494646}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 10, y: 10}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1657666764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657666762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1657666765
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657666762}
   m_CullTransparentMesh: 1
 --- !u!1001 &1660410782
 PrefabInstance:
@@ -42898,6 +42986,7 @@ RectTransform:
   - {fileID: 1304775176}
   - {fileID: 715087120}
   - {fileID: 1454129572}
+  - {fileID: 1657666763}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -46744,7 +46833,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2049522845}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 22.348, y: -6.82, z: 3.335}
+  m_LocalPosition: {x: 7.38, y: -6.82, z: 13.49}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -46770,6 +46859,7 @@ MonoBehaviour:
   pulseAmount: 0.2
   targetSceneName: SampleScene
   transitionDelay: 0.5
+  persistPosition: 1
 --- !u!135 &2049522848
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -46781,8 +46871,8 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.6603327
-  m_Center: {x: -0.90759563, y: 1.0679283, z: 0}
+  m_Radius: 0.5469835
+  m_Center: {x: -0.009868383, y: -0.008400679, z: -0.020151138}
 --- !u!23 &2049522849
 MeshRenderer:
   m_ObjectHideFlags: 0

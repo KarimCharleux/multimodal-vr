@@ -41,6 +41,14 @@ public class VRCameraController : MonoBehaviour
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip birdSound;
+    
+    [Header("Cursor Settings")]
+    [SerializeField] private Image cursorImage; // Reference to UI cursor image
+    [SerializeField] private Color cursorNormalColor = Color.white;
+    [SerializeField] private Color cursorHoverColor = Color.green;
+    [SerializeField] private float cursorNormalSize = 1f;
+    [SerializeField] private float cursorHoverSize = 1.2f;
+    [SerializeField] private bool showCursor = true;
 
     // Mobile control variables
     private bool gyroInitialized = false;
@@ -123,6 +131,12 @@ public class VRCameraController : MonoBehaviour
         if (xrRig == null) xrRig = transform;
         if (cameraOffset == null) cameraOffset = transform.Find("Camera Offset");
         if (mainCamera == null) mainCamera = GetComponentInChildren<Camera>();
+        
+        if (cursorImage != null)
+        {
+            cursorImage.color = cursorNormalColor;
+            cursorImage.transform.localScale = Vector3.one * cursorNormalSize;
+        }
 
         if (hoveredObjectMaterial == null)
         {
@@ -306,6 +320,12 @@ public class VRCameraController : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
         {
             GameObject hitObject = hit.collider.gameObject;
+            
+            if (cursorImage != null && showCursor)
+            {
+                cursorImage.color = cursorHoverColor;
+                cursorImage.transform.localScale = Vector3.one * cursorHoverSize;
+            }
         
             if (hitObject != hoveredObject)
             {
@@ -340,6 +360,12 @@ public class VRCameraController : MonoBehaviour
         }
         else
         {
+            if (cursorImage != null && showCursor)
+            {
+                cursorImage.color = cursorNormalColor;
+                cursorImage.transform.localScale = Vector3.one * cursorNormalSize;
+            }
+            
             UnhoverCurrentObject();
             currentPortal = null;
             if (transitionButton != null)
@@ -527,6 +553,24 @@ public class VRCameraController : MonoBehaviour
         if (currentPortal != null)
         {
             currentPortal.TryTriggerTransition(targetSceneName);
+        }
+    }
+    
+    public void ToggleCursor()
+    {
+        showCursor = !showCursor;
+        if (cursorImage != null)
+        {
+            cursorImage.gameObject.SetActive(showCursor);
+        }
+    }
+    
+    public void SetCursorVisible(bool visible)
+    {
+        showCursor = visible;
+        if (cursorImage != null)
+        {
+            cursorImage.gameObject.SetActive(visible);
         }
     }
 

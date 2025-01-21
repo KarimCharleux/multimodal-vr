@@ -14,12 +14,23 @@ public class SceneTriggerZone : MonoBehaviour
     [Header("Trigger Settings")]
     [SerializeField] private string targetSceneName = "SampleScene";
     [SerializeField] private float transitionDelay = 0.5f;
+    [SerializeField] private bool persistPosition = true;
     
     private Material instanceMaterial;
     private bool isTransitioning = false;
     private MeshRenderer meshRenderer;
+    private static Vector3 lastPosition;
+    private static Quaternion lastRotation;
+    private static string lastScene;
+    private static bool hasStoredPosition;
 
     private void Start()
+    {
+        SetupVisuals();
+        TryRestorePosition();
+    }
+
+    private void SetupVisuals()
     {
         meshRenderer = GetComponent<MeshRenderer>();
         if (meshRenderer != null && portalMaterial != null)
@@ -29,6 +40,24 @@ public class SceneTriggerZone : MonoBehaviour
             
             instanceMaterial.SetColor("_EmissionColor", baseColor * glowIntensity);
             instanceMaterial.SetColor("_Color", new Color(baseColor.r, baseColor.g, baseColor.b, 0.5f));
+        }
+    }
+
+    private void TryRestorePosition()
+    {
+        if (!persistPosition || !hasStoredPosition) return;
+
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (currentScene == lastScene)
+        {
+            var xrRig = FindObjectOfType<VRCameraController>()?.transform;
+            if (xrRig != null)
+            {
+                xrRig.position = lastPosition;
+                xrRig.rotation = lastRotation;
+                Debug.Log($"Restored position: {lastPosition}, rotation: {lastRotation} in scene: {currentScene}");
+            }
+            hasStoredPosition = false; // Clear stored position after restoring
         }
     }
 
@@ -51,8 +80,26 @@ public class SceneTriggerZone : MonoBehaviour
     {
         if (!isTransitioning)
         {
+            if (persistPosition)
+            {
+                StoreCurrentPosition();
+            }
+            
             this.targetSceneName = targetSceneName;
             StartCoroutine(HandleSceneTransition());
+        }
+    }
+
+    private void StoreCurrentPosition()
+    {
+        var xrRig = FindObjectOfType<VRCameraController>()?.transform;
+        if (xrRig != null)
+        {
+            lastPosition = xrRig.position;
+            lastRotation = xrRig.rotation;
+            lastScene = SceneManager.GetActiveScene().name;
+            hasStoredPosition = true;
+            Debug.Log($"Stored position: {lastPosition}, rotation: {lastRotation} from scene: {lastScene}");
         }
     }
 
