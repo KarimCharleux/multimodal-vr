@@ -19,6 +19,7 @@ public class VRCameraController : MonoBehaviour
     [SerializeField] private Button rotateButton;
     [SerializeField] private Button scaleButton;
     [SerializeField] private Button infoButton;
+    [SerializeField] private Button transitionButton; 
 
     [Header("Selection Settings")]
     [SerializeField] private LayerMask selectableLayer;
@@ -26,12 +27,16 @@ public class VRCameraController : MonoBehaviour
     [SerializeField] private Material hoveredObjectMaterial;
     [SerializeField] private Material selectedObjectMaterial;
 
+    [Header("Selection Settings")]
+    [SerializeField] private string targetSceneName = "SampleScene";
+    
     private GameObject hoveredObject;
     private GameObject selectedObject;
     private Material originalHoverMaterial;
     private Material originalSelectedMaterial;
     private ManipulationMode currentMode = ManipulationMode.None;
     private Vector3 originalScale;
+    private SceneTriggerZone currentPortal;
 
     private enum ManipulationMode
     {
@@ -86,6 +91,13 @@ public class VRCameraController : MonoBehaviour
         if (rotateButton) rotateButton.onClick.AddListener(() => SetMode(ManipulationMode.Rotate));
         if (scaleButton) scaleButton.onClick.AddListener(() => SetMode(ManipulationMode.Scale));
         if (infoButton) infoButton.onClick.AddListener(ShowObjectInfo);
+        
+        // Setup transition button
+        if (transitionButton)
+        {
+            transitionButton.onClick.AddListener(TriggerPortalTransition);
+            transitionButton.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
@@ -162,11 +174,35 @@ public class VRCameraController : MonoBehaviour
                     originalHoverMaterial = renderer.material;
                     renderer.material = hoveredObjectMaterial;
                 }
+
+                // Check if this is a portal
+                SceneTriggerZone portalZone = hitObject.GetComponent<SceneTriggerZone>();
+                if (portalZone != null)
+                {
+                    currentPortal = portalZone;
+                    if (transitionButton != null)
+                    {
+                        transitionButton.gameObject.SetActive(true);
+                    }
+                }
+                else
+                {
+                    currentPortal = null;
+                    if (transitionButton != null)
+                    {
+                        transitionButton.gameObject.SetActive(false);
+                    }
+                }
             }
         }
         else
         {
             UnhoverCurrentObject();
+            currentPortal = null;
+            if (transitionButton != null)
+            {
+                transitionButton.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -343,6 +379,14 @@ public class VRCameraController : MonoBehaviour
                 renderer.material = originalHoverMaterial;
             }
             hoveredObject = null;
+        }
+    }
+
+    private void TriggerPortalTransition()
+    {
+        if (currentPortal != null)
+        {
+            currentPortal.TryTriggerTransition(targetSceneName);
         }
     }
 

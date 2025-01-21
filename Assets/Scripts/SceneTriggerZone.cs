@@ -47,10 +47,11 @@ public class SceneTriggerZone : MonoBehaviour
         }
     }
 
-    public void TryTriggerTransition()
+    public void TryTriggerTransition(string targetSceneName)
     {
         if (!isTransitioning)
         {
+            this.targetSceneName = targetSceneName;
             StartCoroutine(HandleSceneTransition());
         }
     }
