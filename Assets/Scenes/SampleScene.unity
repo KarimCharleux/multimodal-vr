@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.4465781, g: 0.49641192, b: 0.574816, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028292, g: 0.22571306, b: 0.30692118, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -197,8 +197,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 300, y: -121}
-  m_SizeDelta: {x: 148.904, y: 25.6849}
+  m_AnchoredPosition: {x: 736, y: -498}
+  m_SizeDelta: {x: 520.4546, y: 162.4161}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &110316639
 MonoBehaviour:
@@ -295,6 +295,7 @@ GameObject:
   - component: {fileID: 218600058}
   - component: {fileID: 218600057}
   - component: {fileID: 218600061}
+  - component: {fileID: 218600062}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -414,22 +415,22 @@ MonoBehaviour:
   - {fileID: 2800000, guid: dd192c6007229f84ca5ebc4ef9236d19, type: 3}
   imagesPerRow: 3
   spacingFraction: 0.1
-  selectedColor:
-    r: 0.8
-    g: 0.8
-    b: 1
-    a: 1
-  normalColor:
-    r: 1
-    g: 1
-    b: 1
-    a: 1
-  characterRenderer: {fileID: 0}
-  currentTexture: {fileID: 0}
-  selectedTexture: {fileID: 0}
-  currentSelectedImage: {fileID: 0}
-  lastWidth: 0
-  characterModels: []
+  targetSceneName: School
+  selectedColor: {r: 0.8, g: 0.8, b: 1, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!65 &218600062
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 218600056}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &226123069
 GameObject:
   m_ObjectHideFlags: 0
@@ -581,7 +582,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1621823469}
   m_Direction: 0
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -753,8 +754,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 505411965}
   m_HandleRect: {fileID: 505411964}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.71807665
+  m_Value: 0
+  m_Size: 0.99998784
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -912,8 +913,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 321.8827, y: 24.565697}
-  m_SizeDelta: {x: 328.4215, y: 220.952}
+  m_AnchoredPosition: {x: 713, y: 40}
+  m_SizeDelta: {x: 1122.7238, y: 809.0996}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &702064228
 MonoBehaviour:
@@ -1162,8 +1163,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 92.5
+  m_fontSizeBase: 92.5
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1579,7 +1580,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0.00014593157}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1001 &2011508214

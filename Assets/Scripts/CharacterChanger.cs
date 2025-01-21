@@ -11,6 +11,7 @@ public class CharacterChanger : MonoBehaviour
     [SerializeField] private Texture2D[] textures;
     [SerializeField] private int imagesPerRow = 3;
     [SerializeField] private float spacingFraction = 0.1f; 
+    [SerializeField] private string targetSceneName = "School";
     [SerializeField] private Color selectedColor = new Color(0.8f, 0.8f, 1f, 1f);
     [SerializeField] private Color normalColor = Color.white;
 
@@ -19,6 +20,7 @@ public class CharacterChanger : MonoBehaviour
     private Texture2D selectedTexture;
     private Image currentSelectedImage;
     private float lastWidth;
+    private SceneTriggerZone triggerZone;
 
     private GameObject[] characterModels;
 
@@ -27,6 +29,12 @@ public class CharacterChanger : MonoBehaviour
         SetupScrollView();
         SetupCharacters();
         characterRenderer = GameObject.Find("SimplePeople").GetComponentInChildren<SkinnedMeshRenderer>();
+        
+        triggerZone = gameObject.GetComponent<SceneTriggerZone>();
+        if (triggerZone == null)
+        {
+            triggerZone = gameObject.AddComponent<SceneTriggerZone>();
+        }
 
         if (textures != null && textures.Length > 0)
         {
@@ -207,6 +215,9 @@ public class CharacterChanger : MonoBehaviour
         {
             currentTexture = selectedTexture;
             Debug.Log($"Applied texture: {currentTexture.name}");
+            Debug.Log($"Target scene: {targetSceneName}");
+            triggerZone.TryTriggerTransition(targetSceneName);
+            
         }
     }
 }

@@ -78,7 +78,11 @@ public class InfoPopupManager : MonoBehaviour
         }
 
         popupPanel.SetActive(true);
-        StartCoroutine(FadeIn());
+        
+        if (canvasGroup != null)
+        {
+            StartCoroutine(FadeIn());
+        }
     }
 
     public void HidePopup()
