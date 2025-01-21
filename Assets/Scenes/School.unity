@@ -21515,12 +21515,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 599194988a284f09a9318eb6e9b6bb3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectableLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  maxSelectionDistance: 10
-  hoveredObjectMaterial: {fileID: 0}
-  showDebugLogs: 1
 --- !u!4 &1064189019
 Transform:
   m_ObjectHideFlags: 0
@@ -30375,7 +30369,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1423253044}
   m_LocalRotation: {x: -0, y: 0.99999213, z: -0, w: -0.0039881486}
-  m_LocalPosition: {x: 8.94, y: 3.82, z: 24}
+  m_LocalPosition: {x: 8.94, y: 0, z: 24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -42576,10 +42570,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fac3edf488f744df832065a477c4e888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dynamicJoystick: {fileID: 7299898602881458847}
-  moveSpeed: 5
-  rotationSpeed: 10
-  rotateWithMovement: 1
 --- !u!1001 &1927809508
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -47684,7 +47674,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 34.116028, y: 6.12381}
+  m_AnchoredPosition: {x: 34.115967, y: 6.1237793}
   m_SizeDelta: {x: 207.8273, y: 191.12}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &7299898602881458847

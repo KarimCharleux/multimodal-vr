@@ -41,6 +41,14 @@ public class VRCameraController : MonoBehaviour
         Scale
     }
 
+    // Preset rotation angles (in degrees)
+    private readonly float[] rotationPresets = { 0f, 90f, 180f, 270f };
+    private int currentRotationIndex = 0;
+
+    // Preset scale values
+    private readonly float[] scalePresets = { 1f, 1.5f, 2f, 0.5f };
+    private int currentScaleIndex = 0;
+
     private void Start()
     {
         SetupComponents();
@@ -166,11 +174,15 @@ public class VRCameraController : MonoBehaviour
     {
         if (mode == currentMode)
         {
-            // Toggle off
-            currentMode = ManipulationMode.None;
-            if (selectedObject != null)
+            // If already in this mode, cycle through presets
+            switch (mode)
             {
-                DeselectObject();
+                case ManipulationMode.Rotate:
+                    currentRotationIndex = (currentRotationIndex + 1) % rotationPresets.Length;
+                    break;
+                case ManipulationMode.Scale:
+                    currentScaleIndex = (currentScaleIndex + 1) % scalePresets.Length;
+                    break;
             }
         }
         else
@@ -180,6 +192,16 @@ public class VRCameraController : MonoBehaviour
             if (hoveredObject != null && selectedObject == null)
             {
                 SelectObject(hoveredObject);
+            }
+
+            // Reset indices when changing modes
+            if (mode == ManipulationMode.Rotate)
+            {
+                currentRotationIndex = 0;
+            }
+            else if (mode == ManipulationMode.Scale)
+            {
+                currentScaleIndex = 0;
             }
         }
 
@@ -226,29 +248,63 @@ public class VRCameraController : MonoBehaviour
     {
         if (selectedObject == null) return;
 
-        // Use move joystick for rotation when in rotate mode
-        float rotationX = moveJoystick.Vertical * rotationSpeed * 50f;
-        float rotationY = moveJoystick.Horizontal * rotationSpeed * 50f;
+        // Get target rotation based on current preset
+        float targetAngle = rotationPresets[currentRotationIndex];
+        
+        // Smoothly rotate to target angle
+        Vector3 currentRotation = selectedObject.transform.eulerAngles;
+        float newYRotation = Mathf.LerpAngle(currentRotation.y, targetAngle, Time.deltaTime * 10f);
+        selectedObject.transform.rotation = Quaternion.Euler(0, newYRotation, 0);
 
-        selectedObject.transform.Rotate(Vector3.right, rotationX * Time.deltaTime, Space.World);
-        selectedObject.transform.Rotate(Vector3.up, rotationY * Time.deltaTime, Space.World);
+        // Check if we've reached the target angle (with some tolerance)
+        if (Mathf.Abs(newYRotation - targetAngle) < 0.1f)
+        {
+            selectedObject.transform.rotation = Quaternion.Euler(0, targetAngle, 0);
+        }
     }
 
     private void HandleScale()
     {
         if (selectedObject == null) return;
 
-        // Use move joystick's vertical axis for scaling
-        float scaleFactor = 1f + (moveJoystick.Vertical * Time.deltaTime);
-        selectedObject.transform.localScale *= scaleFactor;
+        // Get target scale based on current preset
+        float targetScale = scalePresets[currentScaleIndex];
+        
+        // Smoothly scale to target size
+        float currentScale = selectedObject.transform.localScale.x;
+        float newScale = Mathf.Lerp(currentScale, targetScale, Time.deltaTime * 5f);
+        selectedObject.transform.localScale = Vector3.one * newScale;
+
+        // Check if we've reached the target scale (with some tolerance)
+        if (Mathf.Abs(newScale - targetScale) < 0.01f)
+        {
+            selectedObject.transform.localScale = Vector3.one * targetScale;
+        }
     }
 
     private void ShowObjectInfo()
     {
-        // Implement object info display logic here
-        Debug.Log("Show object info");
+        // Check if we have a hovered or selected object to show info for
+        GameObject targetObject = selectedObject != null ? selectedObject : hoveredObject;
+    
+        if (targetObject != null)
+        {
+            ObjectInfo objectInfo = targetObject.GetComponent<ObjectInfo>();
+            if (objectInfo != null && objectInfo.details != null)
+            {
+                // Show the popup with object details using the InfoPopupManager
+                InfoPopupManager.Instance?.ShowPopup(objectInfo.details);
+            }
+            else
+            {
+                Debug.LogWarning("No ObjectInfo component or details found on the target object");
+            }
+        }
+        else
+        {
+            InfoPopupManager.Instance?.HidePopup();
+        }
     }
-
     private void SelectObject(GameObject obj)
     {
         UnhoverCurrentObject();
