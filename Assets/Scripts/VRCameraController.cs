@@ -37,6 +37,10 @@ public class VRCameraController : MonoBehaviour
     [SerializeField] private Material hoveredObjectMaterial;
     [SerializeField] private Material selectedObjectMaterial;
     [SerializeField] private string targetSceneName = "SampleScene";
+    
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip birdSound;
 
     // Mobile control variables
     private bool gyroInitialized = false;
