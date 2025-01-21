@@ -8,28 +8,44 @@ public class VRCameraController : MonoBehaviour
     [SerializeField] private Transform cameraOffset;
     [SerializeField] private Camera mainCamera;
 
+    [Header("Control Type")]
+    [SerializeField] private bool useJoystick = true;
+    [SerializeField] private bool useGyroscope = false;
+    [SerializeField] private bool useTouchControls = false;
+
     [Header("Joystick Controls")]
     [SerializeField] private DynamicJoystick moveJoystick;
     [SerializeField] private DynamicJoystick rotateJoystick;
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotationSpeed = 2f;
 
+    [Header("Mobile Controls")]
+    [SerializeField] private float gyroSmoothing = 0.1f;
+    [SerializeField] private float touchRotationSpeed = 2f;
+    [SerializeField] private float touchMoveSpeed = 0.01f;
+
     [Header("UI Controls")]
     [SerializeField] private Button grabButton;
     [SerializeField] private Button rotateButton;
     [SerializeField] private Button scaleButton;
     [SerializeField] private Button infoButton;
-    [SerializeField] private Button transitionButton; 
+    [SerializeField] private Button transitionButton;
 
     [Header("Selection Settings")]
     [SerializeField] private LayerMask selectableLayer;
     [SerializeField] private float maxSelectionDistance = 10f;
     [SerializeField] private Material hoveredObjectMaterial;
     [SerializeField] private Material selectedObjectMaterial;
-
-    [Header("Selection Settings")]
     [SerializeField] private string targetSceneName = "SampleScene";
-    
+
+    // Mobile control variables
+    private bool gyroInitialized = false;
+    private Quaternion gyroInitialRotation;
+    private Vector2 touchStart;
+    private float rotationX = 0f;
+    private float rotationY = 0f;
+
+    // Object manipulation variables
     private GameObject hoveredObject;
     private GameObject selectedObject;
     private Material originalHoverMaterial;
@@ -46,28 +62,64 @@ public class VRCameraController : MonoBehaviour
         Scale
     }
 
-    // Preset rotation angles (in degrees)
+    // Preset values
     private readonly float[] rotationPresets = { 0f, 90f, 180f, 270f };
-    private int currentRotationIndex = 0;
-
-    // Preset scale values
     private readonly float[] scalePresets = { 1f, 1.5f, 2f, 0.5f };
+    private int currentRotationIndex = 0;
     private int currentScaleIndex = 0;
+
+    private void OnEnable()
+    {
+        InitializeControls();
+    }
 
     private void Start()
     {
         SetupComponents();
         SetupButtons();
+        InitializeControls();
+        UpdateControlUI();
+    }
+
+    private void InitializeControls()
+    {
+        if (useGyroscope)
+        {
+            InitializeGyro();
+        }
+
+        // Lock screen orientation and keep screen active for mobile
+        if (useGyroscope || useTouchControls)
+        {
+            Screen.orientation = ScreenOrientation.LandscapeLeft;
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+        }
+    }
+
+    private void InitializeGyro()
+    {
+        if (SystemInfo.supportsGyroscope)
+        {
+            Input.gyro.enabled = true;
+            gyroInitialRotation = Quaternion.Euler(90f, 90f, 0f);
+            gyroInitialized = true;
+            Debug.Log("Gyroscope initialized");
+        }
+        else
+        {
+            Debug.LogWarning("Gyroscope not supported on this device");
+            useGyroscope = false;
+            useTouchControls = true; // Fallback to touch controls
+            UpdateControlUI();
+        }
     }
 
     private void SetupComponents()
     {
-        // Find camera components if not assigned
         if (xrRig == null) xrRig = transform;
         if (cameraOffset == null) cameraOffset = transform.Find("Camera Offset");
         if (mainCamera == null) mainCamera = GetComponentInChildren<Camera>();
 
-        // Setup default materials
         if (hoveredObjectMaterial == null)
         {
             hoveredObjectMaterial = new Material(Shader.Find("Standard"))
@@ -92,7 +144,6 @@ public class VRCameraController : MonoBehaviour
         if (scaleButton) scaleButton.onClick.AddListener(() => SetMode(ManipulationMode.Scale));
         if (infoButton) infoButton.onClick.AddListener(ShowObjectInfo);
         
-        // Setup transition button
         if (transitionButton)
         {
             transitionButton.onClick.AddListener(TriggerPortalTransition);
@@ -102,13 +153,82 @@ public class VRCameraController : MonoBehaviour
 
     private void Update()
     {
-        HandleCameraMovement();
-        HandleCameraRotation();
+        if (useGyroscope && gyroInitialized)
+        {
+            HandleGyroRotation();
+            HandleTouchMovement(); // Allow touch movement with gyro rotation
+        }
+        else if (useTouchControls)
+        {
+            HandleTouchControls();
+        }
+        else if (useJoystick)
+        {
+            HandleCameraMovement();
+            HandleCameraRotation();
+        }
+
         CheckHover();
         
         if (selectedObject != null)
         {
             HandleObjectManipulation();
+        }
+    }
+
+    private void HandleGyroRotation()
+    {
+        Quaternion gyroRotation = Input.gyro.attitude;
+        Quaternion rotFix = new Quaternion(gyroRotation.x, gyroRotation.y, -gyroRotation.z, -gyroRotation.w);
+        Quaternion targetRotation = gyroInitialRotation * rotFix;
+
+        mainCamera.transform.rotation = Quaternion.Slerp(
+            mainCamera.transform.rotation,
+            targetRotation,
+            gyroSmoothing
+        );
+    }
+
+    private void HandleTouchControls()
+    {
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    touchStart = touch.position;
+                    break;
+
+                case TouchPhase.Moved:
+                    rotationY += touch.deltaPosition.x * touchRotationSpeed * Time.deltaTime;
+                    rotationX -= touch.deltaPosition.y * touchRotationSpeed * Time.deltaTime;
+                    rotationX = Mathf.Clamp(rotationX, -80f, 80f);
+
+                    cameraOffset.rotation = Quaternion.Euler(rotationX, rotationY, 0);
+                    break;
+            }
+        }
+        
+        HandleTouchMovement();
+    }
+
+    private void HandleTouchMovement()
+    {
+        if (Input.touchCount == 2)
+        {
+            Touch touch0 = Input.GetTouch(0);
+            Touch touch1 = Input.GetTouch(1);
+
+            if (touch0.phase == TouchPhase.Moved || touch1.phase == TouchPhase.Moved)
+            {
+                Vector2 deltaPosition = (touch0.deltaPosition + touch1.deltaPosition) / 2f;
+                Vector3 moveDirection = mainCamera.transform.forward * deltaPosition.y +
+                                     mainCamera.transform.right * deltaPosition.x;
+                moveDirection.y = 0;
+                xrRig.position += moveDirection * moveSpeed * touchMoveSpeed;
+            }
         }
     }
 
@@ -119,12 +239,9 @@ public class VRCameraController : MonoBehaviour
         Vector3 movement = new Vector3(moveJoystick.Horizontal, 0, moveJoystick.Vertical);
         if (movement.magnitude > 0.1f)
         {
-            // Transform movement direction relative to camera orientation
             movement = mainCamera.transform.TransformDirection(movement);
-            movement.y = 0; // Keep movement horizontal
+            movement.y = 0;
             movement.Normalize();
-
-            // Move the XR Rig
             xrRig.position += movement * moveSpeed * Time.deltaTime;
         }
     }
@@ -138,14 +255,11 @@ public class VRCameraController : MonoBehaviour
 
         if (Mathf.Abs(rotationX) > 0.1f || Mathf.Abs(rotationY) > 0.1f)
         {
-            // Rotate camera offset (handles Y rotation)
             cameraOffset.Rotate(Vector3.up, rotationY, Space.World);
 
-            // Rotate camera (handles X rotation)
             Vector3 currentRotation = mainCamera.transform.localEulerAngles;
             float newXRotation = currentRotation.x - rotationX;
             
-            // Clamp vertical rotation
             if (newXRotation > 180f) newXRotation -= 360f;
             newXRotation = Mathf.Clamp(newXRotation, -80f, 80f);
             
@@ -175,7 +289,6 @@ public class VRCameraController : MonoBehaviour
                     renderer.material = hoveredObjectMaterial;
                 }
 
-                // Check if this is a portal
                 SceneTriggerZone portalZone = hitObject.GetComponent<SceneTriggerZone>();
                 if (portalZone != null)
                 {
@@ -210,7 +323,6 @@ public class VRCameraController : MonoBehaviour
     {
         if (mode == currentMode)
         {
-            // If already in this mode, cycle through presets
             switch (mode)
             {
                 case ManipulationMode.Rotate:
@@ -223,14 +335,12 @@ public class VRCameraController : MonoBehaviour
         }
         else
         {
-            // Change mode
             currentMode = mode;
             if (hoveredObject != null && selectedObject == null)
             {
                 SelectObject(hoveredObject);
             }
 
-            // Reset indices when changing modes
             if (mode == ManipulationMode.Rotate)
             {
                 currentRotationIndex = 0;
@@ -271,7 +381,6 @@ public class VRCameraController : MonoBehaviour
     {
         if (selectedObject == null) return;
 
-        // Position object in front of camera
         Vector3 targetPosition = mainCamera.transform.position + mainCamera.transform.forward * 2f;
         selectedObject.transform.position = Vector3.Lerp(
             selectedObject.transform.position,
@@ -284,15 +393,11 @@ public class VRCameraController : MonoBehaviour
     {
         if (selectedObject == null) return;
 
-        // Get target rotation based on current preset
         float targetAngle = rotationPresets[currentRotationIndex];
-        
-        // Smoothly rotate to target angle
         Vector3 currentRotation = selectedObject.transform.eulerAngles;
         float newYRotation = Mathf.LerpAngle(currentRotation.y, targetAngle, Time.deltaTime * 10f);
         selectedObject.transform.rotation = Quaternion.Euler(0, newYRotation, 0);
 
-        // Check if we've reached the target angle (with some tolerance)
         if (Mathf.Abs(newYRotation - targetAngle) < 0.1f)
         {
             selectedObject.transform.rotation = Quaternion.Euler(0, targetAngle, 0);
@@ -303,15 +408,11 @@ public class VRCameraController : MonoBehaviour
     {
         if (selectedObject == null) return;
 
-        // Get target scale based on current preset
         float targetScale = scalePresets[currentScaleIndex];
-        
-        // Smoothly scale to target size
         float currentScale = selectedObject.transform.localScale.x;
         float newScale = Mathf.Lerp(currentScale, targetScale, Time.deltaTime * 5f);
         selectedObject.transform.localScale = Vector3.one * newScale;
 
-        // Check if we've reached the target scale (with some tolerance)
         if (Mathf.Abs(newScale - targetScale) < 0.01f)
         {
             selectedObject.transform.localScale = Vector3.one * targetScale;
@@ -320,7 +421,6 @@ public class VRCameraController : MonoBehaviour
 
     private void ShowObjectInfo()
     {
-        // Check if we have a hovered or selected object to show info for
         GameObject targetObject = selectedObject != null ? selectedObject : hoveredObject;
     
         if (targetObject != null)
@@ -328,7 +428,6 @@ public class VRCameraController : MonoBehaviour
             ObjectInfo objectInfo = targetObject.GetComponent<ObjectInfo>();
             if (objectInfo != null && objectInfo.details != null)
             {
-                // Show the popup with object details using the InfoPopupManager
                 InfoPopupManager.Instance?.ShowPopup(objectInfo.details);
             }
             else
@@ -341,6 +440,7 @@ public class VRCameraController : MonoBehaviour
             InfoPopupManager.Instance?.HidePopup();
         }
     }
+
     private void SelectObject(GameObject obj)
     {
         UnhoverCurrentObject();
@@ -390,8 +490,65 @@ public class VRCameraController : MonoBehaviour
         }
     }
 
+    // Control mode methods
+    public void SetControlMode(string mode)
+    {
+        switch (mode.ToLower())
+        {
+            case "joystick":
+                useJoystick = true;
+                useGyroscope = false;
+                useTouchControls = false;
+                break;
+            case "gyroscope":
+                useJoystick = false;
+                useGyroscope = true;
+                useTouchControls = false;
+                InitializeGyro();
+                break;
+            case "touch":
+                useJoystick = false;
+                useGyroscope = false;
+                useTouchControls = true;
+                break;
+        }
+
+        UpdateControlUI();
+    }
+
+    private void UpdateControlUI()
+    {
+        // Update UI visibility based on control mode
+        if (moveJoystick != null)
+        {
+            moveJoystick.gameObject.SetActive(useJoystick);
+        }
+        if (rotateJoystick != null)
+        {
+            rotateJoystick.gameObject.SetActive(useJoystick);
+        }
+    }
+
+    public void ToggleGyroscope()
+    {
+        if (!useGyroscope)
+        {
+            SetControlMode("gyroscope");
+        }
+        else
+        {
+            SetControlMode("touch");
+        }
+    }
+
     private void OnDisable()
     {
+        // Clean up
+        if (Input.gyro != null && Input.gyro.enabled)
+        {
+            Input.gyro.enabled = false;
+        }
+        
         UnhoverCurrentObject();
         DeselectObject();
     }
