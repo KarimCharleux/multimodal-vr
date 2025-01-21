@@ -5,20 +5,15 @@ public class GestureController : MonoBehaviour
     [Header("Selection Settings")]
     [SerializeField] private LayerMask selectableLayer;
     [SerializeField] private float maxSelectionDistance = 10f;
-    [SerializeField] private Material selectedObjectMaterial;
     [SerializeField] private Material hoveredObjectMaterial;
     
-    [Header("Manipulation Settings")]
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float objectMoveDistance = 5f;
+    [Header("Debug Settings")]
     [SerializeField] private bool showDebugLogs = true;
-
+    
     private Camera mainCamera;
-    private GameObject selectedObject;
     private GameObject hoveredObject;
-    private Material originalMaterial;
     private Material originalHoverMaterial;
-    private bool isMovingObject = false;
+    private SceneTriggerZone currentPortal;
     
     // Crosshair settings
     private bool showCrosshair = true;
@@ -34,97 +29,21 @@ public class GestureController : MonoBehaviour
             return;
         }
 
-        // Create hover material if not assigned
         if (hoveredObjectMaterial == null)
         {
             hoveredObjectMaterial = new Material(Shader.Find("Standard"));
-            hoveredObjectMaterial.color = new Color(1f, 1f, 0f, 0.5f); // Semi-transparent yellow
+            hoveredObjectMaterial.color = new Color(1f, 1f, 0f, 0.5f);
         }
     }
 
     private void Update()
     {
-        // Check for object under crosshair
         CheckHover();
-
-        // Handle info popup
-        if (Input.GetKeyDown(KeyCode.I))
+        
+        // Check for portal interaction
+        if (currentPortal != null && Input.GetKeyDown(KeyCode.E))
         {
-            HandleInfoPopup();
-        }
-
-        // Handle object selection and movement
-        if (Input.GetMouseButtonDown(0))
-        {
-            // Use screen center for raycast since cursor is locked
-            Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
-            {
-                if (!isMovingObject)
-                {
-                    SelectObject(hit.collider.gameObject);
-                    isMovingObject = true;
-                }
-            }
-            else if (isMovingObject)
-            {
-                DeselectObject();
-                isMovingObject = false;
-            }
-        }
-
-        // Handle object movement
-        if (isMovingObject && selectedObject != null)
-        {
-            Vector3 targetPosition = mainCamera.transform.position + 
-                                   mainCamera.transform.forward * objectMoveDistance;
-            
-            selectedObject.transform.position = Vector3.Lerp(
-                selectedObject.transform.position,
-                targetPosition,
-                moveSpeed * Time.deltaTime
-            );
-        }
-
-        // Cancel movement with right click
-        if (Input.GetMouseButtonDown(1) && isMovingObject)
-        {
-            DeselectObject();
-            isMovingObject = false;
-        }
-    }
-
-    private bool isPopupOpen = false;
-    private ObjectInfo currentPopupObject = null;
-
-    private void HandleInfoPopup()
-    {
-        if (isPopupOpen)
-        {
-            // Close the popup
-            InfoPopupManager.Instance.HidePopup();
-            isPopupOpen = false;
-            currentPopupObject = null;
-            DebugLog("Closing info popup");
-            return;
-        }
-
-        // Try to open a new popup
-        Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
-        {
-            ObjectInfo objectInfo = hit.collider.gameObject.GetComponent<ObjectInfo>();
-            if (objectInfo != null)
-            {
-                InfoPopupManager.Instance.ShowPopup(objectInfo.details);
-                isPopupOpen = true;
-                currentPopupObject = objectInfo;
-                DebugLog($"Showing info popup for: {hit.collider.gameObject.name}");
-            }
+            currentPortal.TryTriggerTransition();
         }
     }
 
@@ -137,28 +56,30 @@ public class GestureController : MonoBehaviour
         {
             GameObject hitObject = hit.collider.gameObject;
             
-            // Don't hover the selected object
-            if (hitObject != selectedObject)
+            if (hoveredObject != hitObject)
             {
-                if (hoveredObject != hitObject)
+                UnhoverCurrentObject();
+                
+                hoveredObject = hitObject;
+                var renderer = hoveredObject.GetComponent<Renderer>();
+                if (renderer != null)
                 {
-                    // Unhover previous object
-                    UnhoverCurrentObject();
-                    
-                    // Hover new object
-                    hoveredObject = hitObject;
-                    var renderer = hoveredObject.GetComponent<Renderer>();
-                    if (renderer != null)
-                    {
-                        originalHoverMaterial = renderer.material;
-                        renderer.material = hoveredObjectMaterial;
-                    }
+                    originalHoverMaterial = renderer.material;
+                    renderer.material = hoveredObjectMaterial;
+                }
+
+                // Check if it's a portal
+                currentPortal = hitObject.GetComponent<SceneTriggerZone>();
+                if (currentPortal != null)
+                {
+                    DebugLog("Portal highlighted - Press E to activate");
                 }
             }
         }
         else
         {
             UnhoverCurrentObject();
+            currentPortal = null;
         }
     }
 
@@ -172,43 +93,6 @@ public class GestureController : MonoBehaviour
                 renderer.material = originalHoverMaterial;
             }
             hoveredObject = null;
-        }
-    }
-
-    private void SelectObject(GameObject obj)
-    {
-        if (selectedObject != null)
-        {
-            DeselectObject();
-        }
-
-        // Unhover the object if it's being selected
-        if (obj == hoveredObject)
-        {
-            UnhoverCurrentObject();
-        }
-
-        selectedObject = obj;
-        var renderer = selectedObject.GetComponent<Renderer>();
-        if (renderer != null && selectedObjectMaterial != null)
-        {
-            originalMaterial = renderer.material;
-            renderer.material = selectedObjectMaterial;
-        }
-        DebugLog($"Selected object: {selectedObject.name}");
-    }
-
-    private void DeselectObject()
-    {
-        if (selectedObject != null)
-        {
-            var renderer = selectedObject.GetComponent<Renderer>();
-            if (renderer != null && originalMaterial != null)
-            {
-                renderer.material = originalMaterial;
-            }
-            DebugLog($"Deselected object: {selectedObject.name}");
-            selectedObject = null;
         }
     }
 
@@ -233,9 +117,8 @@ public class GestureController : MonoBehaviour
 
     private void OnDisable()
     {
-        // Clean up when disabled
         UnhoverCurrentObject();
-        DeselectObject();
+        currentPortal = null;
     }
 
     private void DebugLog(string message)
