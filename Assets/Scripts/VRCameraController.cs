@@ -139,7 +139,11 @@ public class VRCameraController : MonoBehaviour
 
     private void SetupButtons()
     {
-        if (grabButton) grabButton.onClick.AddListener(() => SetMode(ManipulationMode.Grab));
+        if (grabButton) 
+        {
+            grabButton.onClick.RemoveAllListeners();
+            grabButton.onClick.AddListener(ToggleGrabMode);
+        }
         if (rotateButton) rotateButton.onClick.AddListener(() => SetMode(ManipulationMode.Rotate));
         if (scaleButton) scaleButton.onClick.AddListener(() => SetMode(ManipulationMode.Scale));
         if (infoButton) infoButton.onClick.AddListener(ShowObjectInfo);
@@ -148,6 +152,26 @@ public class VRCameraController : MonoBehaviour
         {
             transitionButton.onClick.AddListener(TriggerPortalTransition);
             transitionButton.gameObject.SetActive(false);
+        }
+    }
+    
+    private void ToggleGrabMode()
+    {
+        Debug.Log($"ToggleGrabMode - Current mode: {currentMode}, Selected: {selectedObject}, Hovered: {hoveredObject}");
+
+        if (currentMode == ManipulationMode.Grab && selectedObject != null)
+        {
+            // Deselect current object
+            DeselectObject();
+            currentMode = ManipulationMode.None;
+            UpdateButtonVisuals();
+        }
+        else if (hoveredObject != null)
+        {
+            // Select new object
+            SelectObject(hoveredObject);
+            currentMode = ManipulationMode.Grab;
+            UpdateButtonVisuals();
         }
     }
 
@@ -269,7 +293,8 @@ public class VRCameraController : MonoBehaviour
 
     private void CheckHover()
     {
-        if (currentMode != ManipulationMode.None) return;
+        // Only check for hover when not grabbing an object
+        if (currentMode == ManipulationMode.Grab) return;
 
         Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
@@ -277,7 +302,7 @@ public class VRCameraController : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxSelectionDistance, selectableLayer))
         {
             GameObject hitObject = hit.collider.gameObject;
-            
+        
             if (hitObject != hoveredObject)
             {
                 UnhoverCurrentObject();
@@ -289,6 +314,7 @@ public class VRCameraController : MonoBehaviour
                     renderer.material = hoveredObjectMaterial;
                 }
 
+                // Check for portal zone
                 SceneTriggerZone portalZone = hitObject.GetComponent<SceneTriggerZone>();
                 if (portalZone != null)
                 {
@@ -354,9 +380,14 @@ public class VRCameraController : MonoBehaviour
         UpdateButtonVisuals();
     }
 
+    
     private void UpdateButtonVisuals()
     {
-        if (grabButton) grabButton.GetComponent<Image>().color = currentMode == ManipulationMode.Grab ? Color.yellow : Color.white;
+        if (grabButton)
+        {
+            grabButton.GetComponent<Image>().color = 
+                (currentMode == ManipulationMode.Grab && selectedObject != null) ? Color.yellow : Color.white;
+        }
         if (rotateButton) rotateButton.GetComponent<Image>().color = currentMode == ManipulationMode.Rotate ? Color.yellow : Color.white;
         if (scaleButton) scaleButton.GetComponent<Image>().color = currentMode == ManipulationMode.Scale ? Color.yellow : Color.white;
     }
@@ -441,10 +472,14 @@ public class VRCameraController : MonoBehaviour
         }
     }
 
+    
     private void SelectObject(GameObject obj)
     {
+        if (obj == null) return;
+    
+        Debug.Log($"Selecting object: {obj.name}");
         UnhoverCurrentObject();
-        
+    
         selectedObject = obj;
         var renderer = selectedObject.GetComponent<Renderer>();
         if (renderer != null)
@@ -452,12 +487,13 @@ public class VRCameraController : MonoBehaviour
             originalSelectedMaterial = renderer.material;
             renderer.material = selectedObjectMaterial;
         }
-        
+    
         originalScale = selectedObject.transform.localScale;
     }
 
     private void DeselectObject()
     {
+        Debug.Log("Deselecting object");
         if (selectedObject != null)
         {
             var renderer = selectedObject.GetComponent<Renderer>();
