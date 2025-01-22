@@ -57,7 +57,7 @@ public class SceneTriggerZone : MonoBehaviour
                 xrRig.rotation = lastRotation;
                 Debug.Log($"Restored position: {lastPosition}, rotation: {lastRotation} in scene: {currentScene}");
             }
-            hasStoredPosition = false; // Clear stored position after restoring
+            hasStoredPosition = false; 
         }
     }
 
