@@ -27,7 +27,6 @@ public class SceneTriggerZone : MonoBehaviour
     private void Start()
     {
         SetupVisuals();
-        TryRestorePosition();
     }
 
     private void SetupVisuals()
@@ -40,24 +39,6 @@ public class SceneTriggerZone : MonoBehaviour
             
             instanceMaterial.SetColor("_EmissionColor", baseColor * glowIntensity);
             instanceMaterial.SetColor("_Color", new Color(baseColor.r, baseColor.g, baseColor.b, 0.5f));
-        }
-    }
-
-    private void TryRestorePosition()
-    {
-        if (!persistPosition || !hasStoredPosition) return;
-
-        string currentScene = SceneManager.GetActiveScene().name;
-        if (currentScene == lastScene)
-        {
-            var xrRig = FindObjectOfType<VRCameraController>()?.transform;
-            if (xrRig != null)
-            {
-                xrRig.position = lastPosition;
-                xrRig.rotation = lastRotation;
-                Debug.Log($"Restored position: {lastPosition}, rotation: {lastRotation} in scene: {currentScene}");
-            }
-            hasStoredPosition = false; 
         }
     }
 
@@ -80,26 +61,8 @@ public class SceneTriggerZone : MonoBehaviour
     {
         if (!isTransitioning)
         {
-            if (persistPosition)
-            {
-                StoreCurrentPosition();
-            }
-            
             this.targetSceneName = targetSceneName;
             StartCoroutine(HandleSceneTransition());
-        }
-    }
-
-    private void StoreCurrentPosition()
-    {
-        var xrRig = FindObjectOfType<VRCameraController>()?.transform;
-        if (xrRig != null)
-        {
-            lastPosition = xrRig.position;
-            lastRotation = xrRig.rotation;
-            lastScene = SceneManager.GetActiveScene().name;
-            hasStoredPosition = true;
-            Debug.Log($"Stored position: {lastPosition}, rotation: {lastRotation} from scene: {lastScene}");
         }
     }
 
