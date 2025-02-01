@@ -22,6 +22,9 @@ Ce projet est conçu pour permettre aux étudiants de personnaliser leur avatar 
  - Gestes de redimensionnement
  - Contrôles de rotation
 
+### Karim CHARLEUX
+- Mise en place la map et des textures (ciel et sol)
+
 ## ✅ Prérequis
 Avant de commencer, assurez-vous d'avoir les éléments suivants installés :
 
@@ -38,18 +41,14 @@ Avant de commencer, assurez-vous d'avoir les éléments suivants installés :
 2. Sélectionnez Android comme plateforme
 3. Cliquez sur `Switch Platform` pour appliquer les changements
 
-### Configurer les paramètres VR 🎮
-
-1. Allez dans `Edit > Project Settings > XR Plug-in Management`
-2. Cochez Oculus sous `Plug-in Providers`
-
 ## 🚀 Exécution du projet
-
-### Ouvrir la scène principale 🎬
-
-1. Dans le dossier `Assets/Scenes`, ouvrez la scène `School`
 
 ### Build et déploiement 🏗️
 
 1. Dans `File > Build Settings`, assurez-vous que la scène `School` et `SimpleScene` sont ajoutées à la liste des scènes à build
 2. Cliquez sur `Build And Run`
+
+## 🖇️ Liens vers les ressources Unity utilisées : 
+- https://assetstore.unity.com/packages/2d/textures-materials/sky/free-stylized-skybox-212257
+- https://assetstore.unity.com/packages/2d/textures-materials/pack-free-textures-2-266006
+- https://assetstore.unity.com/packages/3d/environments/school-assets-146253
